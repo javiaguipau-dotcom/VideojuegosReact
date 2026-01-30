@@ -1,0 +1,87 @@
+/* Contenedor principal de la app */
+.app-wrapper {
+  display: flex;
+  min-height: 100vh;
+  background: #f5f7fa;
+}
+
+.menu-container {
+  flex: 0 0 280px;
+  background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+  box-shadow: 2px 0 20px rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  animation: slideInLeft 0.5s ease;
+}
+
+.content-container {
+  flex: 1;
+  padding: 40px 20px;
+  overflow-y: auto;
+  animation: slideInRight 0.5s ease;
+}
+
+.listador-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Responsive - Tablets */
+@media (max-width: 1024px) {
+  .app-wrapper {
+    flex-direction: column;
+  }
+
+  .menu-container {
+    flex: 0 0 auto;
+    height: auto;
+    position: relative;
+    padding: 20px;
+  }
+
+  .content-container {
+    padding: 30px 20px;
+  }
+
+  .listador-grid {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  }
+}
+
+/* Responsive - Móviles */
+@media (max-width: 768px) {
+  .app-wrapper {
+    flex-direction: column;
+  }
+
+  .menu-container {
+    flex: 0 0 auto;
+    height: auto;
+    position: relative;
+  }
+
+  .content-container {
+    padding: 20px 15px;
+  }
+
+  .listador-grid {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .content-container {
+    padding: 15px 10px;
+  }
+
+  .listador-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}
