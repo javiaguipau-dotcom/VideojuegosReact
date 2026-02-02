@@ -1,31 +1,31 @@
-import { useState } from "react";
 import './MenuCategorias.css';
 
-function MenuCategorias() {
-    const [categorias, setCategorias] = useState([
-        'Acción',
-        'Aventura',
-        'RPG',
-        'Deportes',
-        'Estrategia',
-        'Puzzle'
-    ]);
-    const [activeCategory, setActiveCategory] = useState('Acción');
+function MenuCategorias({ categorias, categoriasFiltradas, setCategoriasFiltradas }) {
+    const handleCheckboxChange = (categoria) => {
+        if (categoriasFiltradas.includes(categoria)) {
+            // Si está seleccionada, desseleccionar
+            setCategoriasFiltradas(categoriasFiltradas.filter(cat => cat !== categoria));
+        } else {
+            // Si no está seleccionada, seleccionar
+            setCategoriasFiltradas([...categoriasFiltradas, categoria]);
+        }
+    };
 
     return ( 
         <div className="menu-wrapper">
             <div className="menu-header">
-                <h2>Categorías</h2>
+                <h2>Filtrar por Categorías</h2>
             </div>
             <div className="categorias-list">
                 {categorias.map((categoria, index) => (
-                    <button 
-                        key={index}
-                        className={`categoria-btn ${activeCategory === categoria ? 'active' : ''}`}
-                        onClick={() => setActiveCategory(categoria)}
-                    >
-                        {categoria}
-                    </button>
+                    <label key={index} className="categoria-checkbox">
+                        <input
+                            type="checkbox"
+                            checked={categoriasFiltradas.includes(categoria)}
+                            onChange={() => handleCheckboxChange(categoria)}
+                        />
+                        <span>{categoria}</span>
+                    </label>
                 ))}
             </div>
         </div>
