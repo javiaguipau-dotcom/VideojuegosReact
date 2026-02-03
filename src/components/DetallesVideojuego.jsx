@@ -1,7 +1,40 @@
+import { useState } from 'react';
 import './DetallesVideojuego.css';
 
-function DetallesVideojuego({ videojuego, onCerrar }) {
+function DetallesVideojuego({ videojuego, onCerrar, onEliminar }) {
     if (!videojuego) return null;
+
+    const [eliminando, setEliminando] = useState(false);
+    const [error, setError] = useState(null);
+
+    const handleEliminar = async () => {
+        if (!window.confirm(`¿Está seguro de que desea eliminar "${videojuego.nombre}"?`)) {
+            return;
+        }
+
+        setEliminando(true);
+        setError(null);
+
+        try {
+            const response = await fetch(`http://localhost:3000/videojuegos/${videojuego.id}`, {
+                method: 'DELETE',
+            });
+
+            if (!response.ok) {
+                throw new Error('Error al eliminar el videojuego');
+            }
+
+            if (onEliminar) {
+                onEliminar(videojuego.id);
+            }
+
+            onCerrar();
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setEliminando(false);
+        }
+    };
 
     return (
         <div className="detalles-overlay">
@@ -77,6 +110,22 @@ function DetallesVideojuego({ videojuego, onCerrar }) {
                             >
                                 Ver video del juego
                             </a>
+                        </div>
+
+                        {error && (
+                            <div className="detalles-error">
+                                {error}
+                            </div>
+                        )}
+
+                        <div className="detalles-acciones">
+                            <button 
+                                className="detalles-boton-eliminar"
+                                onClick={handleEliminar}
+                                disabled={eliminando}
+                            >
+                                {eliminando ? 'Eliminando...' : 'Eliminar Videojuego'}
+                            </button>
                         </div>
                     </div>
                 </div>

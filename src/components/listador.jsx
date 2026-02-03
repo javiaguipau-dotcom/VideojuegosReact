@@ -7,6 +7,12 @@ function Listador({ categoriasFiltradas, plataformasFiltradas, terminoBusqueda, 
     const [videojuegosFiltrados, setVideojuegosFiltrados] = useState([]);
     const [videojuegoSeleccionado, setVideojuegoSeleccionado] = useState(null);
 
+    const handleEliminarVideojuego = (idVideojuego) => {
+        // Actualizar la lista de videojuegos removiendo el eliminado
+        setVideojuegos(videojuegos.filter(v => v.id !== idVideojuego));
+        setVideojuegoSeleccionado(null);
+    };
+
     useEffect(() => {
         fetch('http://localhost:3000/videojuegos')
             .then(response => (response.json()))
@@ -82,6 +88,7 @@ function Listador({ categoriasFiltradas, plataformasFiltradas, terminoBusqueda, 
                 <DetallesVideojuego 
                     videojuego={videojuegoSeleccionado}
                     onCerrar={() => setVideojuegoSeleccionado(null)}
+                    onEliminar={handleEliminarVideojuego}
                 />
             )}
         </div>
