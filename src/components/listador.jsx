@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import './listador.css';
+import DetallesVideojuego from './DetallesVideojuego';
 
 function Listador({ categoriasFiltradas, plataformasFiltradas, terminoBusqueda, setTerminoBusqueda }) {
     const [videojuegos, setVideojuegos] = useState([]);
     const [videojuegosFiltrados, setVideojuegosFiltrados] = useState([]);
+    const [videojuegoSeleccionado, setVideojuegoSeleccionado] = useState(null);
 
     useEffect(() => {
         fetch('http://localhost:3000/videojuegos')
@@ -45,7 +47,11 @@ function Listador({ categoriasFiltradas, plataformasFiltradas, terminoBusqueda, 
         <div className="listador-grid">
             {videojuegosFiltrados && videojuegosFiltrados.length > 0 ? (
                 videojuegosFiltrados.map((juego, index) => (
-                    <div key={index} className="game-card">
+                    <div 
+                        key={index} 
+                        className="game-card"
+                        onClick={() => setVideojuegoSeleccionado(juego)}
+                    >
                         <img 
                             className="portada" 
                             src={juego.urlimagen}
@@ -72,6 +78,12 @@ function Listador({ categoriasFiltradas, plataformasFiltradas, terminoBusqueda, 
                 </div>
             )}
             </div>
+            {videojuegoSeleccionado && (
+                <DetallesVideojuego 
+                    videojuego={videojuegoSeleccionado}
+                    onCerrar={() => setVideojuegoSeleccionado(null)}
+                />
+            )}
         </div>
     )
 }
