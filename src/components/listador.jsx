@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import './listador.css';
 
-function Listador({ categoriasFiltradas }) {
+function Listador({ categoriasFiltradas, plataformasFiltradas, terminoBusqueda, setTerminoBusqueda }) {
     const [videojuegos, setVideojuegos] = useState([]);
     const [videojuegosFiltrados, setVideojuegosFiltrados] = useState([]);
 
@@ -11,19 +11,37 @@ function Listador({ categoriasFiltradas }) {
             .then(data => setVideojuegos(data))
     }, []);
 
-    // Filtrar videojuegos según las categorías seleccionadas
+    // Filtrar videojuegos según las categorías y plataformas seleccionadas
     useEffect(() => {
-        if (categoriasFiltradas.length === 0) {
+        if (categoriasFiltradas.length === 0 || plataformasFiltradas.length === 0) {
             setVideojuegosFiltrados([]);
         } else {
-            const filtrados = videojuegos.filter(juego => 
-                juego.categorias?.some(cat => categoriasFiltradas.includes(cat))
-            );
+            const filtrados = videojuegos.filter(juego => {
+                const tieneCategoria = juego.categorias?.some(cat => categoriasFiltradas.includes(cat));
+                const tienePlataforma = juego.plataformas?.some(plat => plataformasFiltradas.includes(plat));
+                
+                // Buscar en nombre o descripción
+                const coincideBusqueda = terminoBusqueda === '' || 
+                    juego.nombre?.toLowerCase().includes(terminoBusqueda.toLowerCase()) ||
+                    juego.descripcion?.toLowerCase().includes(terminoBusqueda.toLowerCase());
+                
+                return tieneCategoria && tienePlataforma && coincideBusqueda;
+            });
             setVideojuegosFiltrados(filtrados);
         }
-    }, [videojuegos, categoriasFiltradas]);
+    }, [videojuegos, categoriasFiltradas, plataformasFiltradas, terminoBusqueda]);
 
     return (
+        <div className="listador-container">
+            <div className="search-container">
+                <input
+                    type="text"
+                    placeholder="Buscar por nombre o descripción..."
+                    value={terminoBusqueda}
+                    onChange={(e) => setTerminoBusqueda(e.target.value)}
+                    className="search-input-box"
+                />
+            </div>
         <div className="listador-grid">
             {videojuegosFiltrados && videojuegosFiltrados.length > 0 ? (
                 videojuegosFiltrados.map((juego, index) => (
@@ -53,6 +71,7 @@ function Listador({ categoriasFiltradas }) {
                     <p className="loading-text">Cargando videojuegos...</p>
                 </div>
             )}
+            </div>
         </div>
     )
 }
