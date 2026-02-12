@@ -9,6 +9,7 @@ import MyGames from './pages/MyGames';
 import CreateGame from './pages/CreateGame';
 import GameDetail from './pages/GameDetail';
 import ReportedGames from './pages/ReportedGames';
+import AIAssistant from './components/AIAssistant';
 import './App.css';
 
 function App() {
@@ -34,6 +35,9 @@ function App() {
             <Route path="*" element={<Navigate to="/" />} />
           </Routes>
         </div>
+
+        {/* AI Assistant - Always visible */}
+        <AIAssistant />
       </Router>
     </AuthProvider>
   );

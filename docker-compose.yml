@@ -1,15 +1,32 @@
 version: '3'
 services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5173:5173"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - VITE_API_URL=http://localhost:5001
+    depends_on:
+      - backend
+
   backend:
     build: ./backend
     ports:
-      - "5000:5000"
+      - "5001:5000"
     environment:
       - PORT=5000
       - MONGODB_URI=mongodb://mongo:27017/videojuegosdb
       - JWT_SECRET=supersecretkey_change_this_in_production
+      - OLLAMA_URL=http://ollama:11434
+      - OLLAMA_MODEL=qwen2.5:0.5b
     depends_on:
       - mongo
+      - ollama
 
   mongo:
     image: mongo
@@ -18,5 +35,15 @@ services:
     volumes:
       - mongo-data:/data/db
 
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    restart: unless-stopped
+
 volumes:
   mongo-data:
+  ollama_data:

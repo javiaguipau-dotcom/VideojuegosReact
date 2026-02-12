@@ -25,6 +25,7 @@ app.get('/', (req, res) => {
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/games', require('./routes/gameRoutes'));
 app.use('/api/games', require('./routes/commentRoutes'));
+app.use('/api/ai', require('./routes/aiRoutes'));
 
 const PORT = process.env.PORT || 5000;
 
