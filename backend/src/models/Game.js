@@ -24,8 +24,23 @@ const gameSchema = mongoose.Schema({
         required: true,
         ref: 'User',
     },
+    likes: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    }],
+    dislikes: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    }]
 }, {
     timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true }
+});
+
+// Virtual field for popularity calculation
+gameSchema.virtual('popularity').get(function () {
+    return this.likes.length - this.dislikes.length;
 });
 
 const Game = mongoose.model('Game', gameSchema);

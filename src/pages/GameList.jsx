@@ -9,6 +9,7 @@ const GameList = () => {
     const [loading, setLoading] = useState(true);
     const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(10);
+    const [sort, setSort] = useState('newest');
     const [pagination, setPagination] = useState({
         totalGames: 0,
         currentPage: 1,
@@ -22,7 +23,7 @@ const GameList = () => {
         const fetchGames = async () => {
             setLoading(true);
             try {
-                const { data } = await api.get(`/games?page=${page}&limit=${limit}`);
+                const { data } = await api.get(`/games?page=${page}&limit=${limit}&sort=${sort}`);
                 setGames(data.games);
                 setPagination(data.pagination);
             } catch (error) {
@@ -33,14 +34,14 @@ const GameList = () => {
         };
 
         fetchGames();
-    }, [page, limit]);
+    }, [page, limit, sort]);
 
     const handleDelete = async (id) => {
         if (!window.confirm('Are you sure you want to delete this game?')) return;
         try {
             await api.delete(`/games/${id}`);
             // Refetch current page after deletion
-            const { data } = await api.get(`/games?page=${page}&limit=${limit}`);
+            const { data } = await api.get(`/games?page=${page}&limit=${limit}&sort=${sort}`);
             setGames(data.games);
             setPagination(data.pagination);
         } catch (error) {
@@ -51,6 +52,30 @@ const GameList = () => {
     const handleLimitChange = (e) => {
         setLimit(parseInt(e.target.value));
         setPage(1); // Reset to first page when changing limit
+    };
+
+    const handleSortChange = (e) => {
+        setSort(e.target.value);
+        setPage(1); // Reset to first page when changing sort
+    };
+
+    const handleVote = async (gameId, voteType) => {
+        try {
+            await api.post(`/games/${gameId}/vote`, { voteType });
+            // Refetch to get updated counts
+            const { data } = await api.get(`/games?page=${page}&limit=${limit}&sort=${sort}`);
+            setGames(data.games);
+        } catch (error) {
+            console.error('Error voting:', error);
+            alert('Error submitting vote');
+        }
+    };
+
+    const getUserVote = (game) => {
+        if (!user) return null;
+        if (game.likes?.includes(user._id)) return 'like';
+        if (game.dislikes?.includes(user._id)) return 'dislike';
+        return null;
     };
 
     const handlePrevPage = () => {
@@ -71,21 +96,38 @@ const GameList = () => {
         <div className="listador-container">
             <h1>All Games</h1>
 
-            {/* Pagination Controls - Top */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                <div>
-                    <label htmlFor="limit-select" style={{ marginRight: '10px' }}>Games per page:</label>
-                    <select
-                        id="limit-select"
-                        value={limit}
-                        onChange={handleLimitChange}
-                        style={{ padding: '5px 10px', borderRadius: '4px', backgroundColor: 'var(--bg-card)', color: 'white', border: '1px solid #334155' }}
-                    >
-                        <option value={5}>5</option>
-                        <option value={10}>10</option>
-                        <option value={20}>20</option>
-                        <option value={50}>50</option>
-                    </select>
+            {/* Pagination & Sort Controls - Top */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '10px' }}>
+                <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
+                    <div>
+                        <label htmlFor="limit-select" style={{ marginRight: '10px' }}>Per page:</label>
+                        <select
+                            id="limit-select"
+                            value={limit}
+                            onChange={handleLimitChange}
+                            style={{ padding: '5px 10px', borderRadius: '4px', backgroundColor: 'var(--bg-card)', color: 'white', border: '1px solid #334155' }}
+                        >
+                            <option value={5}>5</option>
+                            <option value={10}>10</option>
+                            <option value={20}>20</option>
+                            <option value={50}>50</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label htmlFor="sort-select" style={{ marginRight: '10px' }}>Sort by:</label>
+                        <select
+                            id="sort-select"
+                            value={sort}
+                            onChange={handleSortChange}
+                            style={{ padding: '5px 10px', borderRadius: '4px', backgroundColor: 'var(--bg-card)', color: 'white', border: '1px solid #334155' }}
+                        >
+                            <option value="newest">Newest</option>
+                            <option value="oldest">Oldest</option>
+                            <option value="popularity">Popularity</option>
+                            <option value="price-high">Price (High to Low)</option>
+                            <option value="price-low">Price (Low to High)</option>
+                        </select>
+                    </div>
                 </div>
                 <div>
                     Showing {games.length > 0 ? ((page - 1) * limit + 1) : 0} - {Math.min(page * limit, pagination.totalGames)} of {pagination.totalGames} games
@@ -113,6 +155,43 @@ const GameList = () => {
                                     </div>
                                 </div>
                             </Link>
+
+                            {/* Voting Section */}
+                            <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginTop: '10px', padding: '5px 0', borderTop: '1px solid #334155' }}>
+                                <button
+                                    onClick={() => handleVote(game._id, 'like')}
+                                    style={{
+                                        backgroundColor: getUserVote(game) === 'like' ? '#22c55e' : 'transparent',
+                                        color: getUserVote(game) === 'like' ? 'white' : '#22c55e',
+                                        border: '1px solid #22c55e',
+                                        padding: '5px 10px',
+                                        borderRadius: '4px',
+                                        cursor: 'pointer',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '5px'
+                                    }}
+                                >
+                                    👍 {game.likes?.length || 0}
+                                </button>
+                                <button
+                                    onClick={() => handleVote(game._id, 'dislike')}
+                                    style={{
+                                        backgroundColor: getUserVote(game) === 'dislike' ? '#ef4444' : 'transparent',
+                                        color: getUserVote(game) === 'dislike' ? 'white' : '#ef4444',
+                                        border: '1px solid #ef4444',
+                                        padding: '5px 10px',
+                                        borderRadius: '4px',
+                                        cursor: 'pointer',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '5px'
+                                    }}
+                                >
+                                    👎 {game.dislikes?.length || 0}
+                                </button>
+                            </div>
+
                             {/* Delete button logic: Admin or Owner */}
                             {user && (user.role === 'admin' || user._id === game.owner?._id) && (
                                 <button

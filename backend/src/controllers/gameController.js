@@ -19,12 +19,66 @@ const getGames = async (req, res) => {
         // Get total count for pagination metadata
         const totalGames = await Game.countDocuments();
 
+        // Get sort parameter
+        const sort = req.query.sort || 'newest';
+        let sortQuery = {};
+
+        switch (sort) {
+            case 'popularity':
+                // For popularity sorting, we need to add a computed field
+                sortQuery = { $expr: { $subtract: [{ $size: "$likes" }, { $size: "$dislikes" }] } };
+                break;
+            case 'price-high':
+                sortQuery = { precio: -1 };
+                break;
+            case 'price-low':
+                sortQuery = { precio: 1 };
+                break;
+            case 'oldest':
+                sortQuery = { createdAt: 1 };
+                break;
+            case 'newest':
+            default:
+                sortQuery = { createdAt: -1 };
+                break;
+        }
+
+
         // Fetch paginated games
-        const games = await Game.find()
-            .populate('owner', 'username')
-            .limit(validLimit)
-            .skip(skip)
-            .sort({ createdAt: -1 }); // Newest first
+        let games;
+        if (sort === 'popularity') {
+            // For popularity, we need to use aggregation
+            games = await Game.aggregate([
+                {
+                    $addFields: {
+                        popularity: { $subtract: [{ $size: "$likes" }, { $size: "$dislikes" }] }
+                    }
+                },
+                { $sort: { popularity: -1 } },
+                { $skip: skip },
+                { $limit: validLimit },
+                {
+                    $lookup: {
+                        from: 'users',
+                        localField: 'owner',
+                        foreignField: '_id',
+                        as: 'owner'
+                    }
+                },
+                { $unwind: '$owner' },
+                {
+                    $project: {
+                        'owner.password': 0
+                    }
+                }
+            ]);
+        } else {
+            games = await Game.find()
+                .populate('owner', 'username')
+                .limit(validLimit)
+                .skip(skip)
+                .sort(sortQuery);
+        }
 
         // Calculate total pages
         const totalPages = Math.ceil(totalGames / validLimit);
