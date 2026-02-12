@@ -8,7 +8,10 @@ dotenv.config();
 const app = express();
 
 // Connect to Database
-connectDB();
+connectDB().then(() => {
+    // Seed data if empty
+    require('./utils/seeder')();
+});
 
 // Middleware
 app.use(cors());
