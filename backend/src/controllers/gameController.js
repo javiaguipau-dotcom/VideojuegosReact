@@ -5,8 +5,42 @@ const Game = require('../models/Game');
 // @access  Private
 const getGames = async (req, res) => {
     try {
-        const games = await Game.find().populate('owner', 'username');
-        res.status(200).json(games);
+        // Get pagination parameters from query string
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+
+        // Validate limit to allowed values
+        const allowedLimits = [5, 10, 20, 50];
+        const validLimit = allowedLimits.includes(limit) ? limit : 10;
+
+        // Calculate skip value
+        const skip = (page - 1) * validLimit;
+
+        // Get total count for pagination metadata
+        const totalGames = await Game.countDocuments();
+
+        // Fetch paginated games
+        const games = await Game.find()
+            .populate('owner', 'username')
+            .limit(validLimit)
+            .skip(skip)
+            .sort({ createdAt: -1 }); // Newest first
+
+        // Calculate total pages
+        const totalPages = Math.ceil(totalGames / validLimit);
+
+        // Return paginated response
+        res.status(200).json({
+            games,
+            pagination: {
+                totalGames,
+                currentPage: page,
+                totalPages,
+                limit: validLimit,
+                hasNextPage: page < totalPages,
+                hasPrevPage: page > 1
+            }
+        });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
