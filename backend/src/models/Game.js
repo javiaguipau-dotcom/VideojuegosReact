@@ -31,7 +31,22 @@ const gameSchema = mongoose.Schema({
     dislikes: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
-    }]
+    }],
+    reports: [{
+        user: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User'
+        },
+        reason: String,
+        createdAt: {
+            type: Date,
+            default: Date.now
+        }
+    }],
+    isReported: {
+        type: Boolean,
+        default: false
+    }
 }, {
     timestamps: true,
     toJSON: { virtuals: true },

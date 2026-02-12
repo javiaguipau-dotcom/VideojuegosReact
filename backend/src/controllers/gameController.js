@@ -182,10 +182,71 @@ const deleteGame = async (req, res) => {
     }
 };
 
+// @desc    Report a game
+// @route   POST /api/games/:id/report
+// @access  Private
+const reportGame = async (req, res) => {
+    try {
+        const { reason } = req.body;
+        const gameId = req.params.id;
+        const userId = req.user.id;
+
+        if (!reason || reason.trim() === '') {
+            return res.status(400).json({ message: 'Report reason is required' });
+        }
+
+        const game = await Game.findById(gameId);
+
+        if (!game) {
+            return res.status(404).json({ message: 'Game not found' });
+        }
+
+        // Check if user already reported this game
+        const alreadyReported = game.reports.some(report => report.user.toString() === userId);
+        if (alreadyReported) {
+            return res.status(400).json({ message: 'You have already reported this game' });
+        }
+
+        // Add report to game
+        game.reports.push({
+            user: userId,
+            reason,
+            createdAt: new Date()
+        });
+
+        // Mark game as reported if it has at least one report
+        game.isReported = true;
+
+        await game.save();
+
+        res.status(200).json({ message: 'Game reported successfully', reportCount: game.reports.length });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Get all reported games
+// @route   GET /api/games/reported
+// @access  Admin only
+const getReportedGames = async (req, res) => {
+    try {
+        const reportedGames = await Game.find({ isReported: true })
+            .populate('owner', 'username')
+            .populate('reports.user', 'username')
+            .sort({ 'reports.createdAt': -1 }); // Most recently reported first
+
+        res.status(200).json(reportedGames);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
 module.exports = {
     getGames,
     getMyGames,
     getGameById,
     createGame,
     deleteGame,
+    reportGame,
+    getReportedGames
 };

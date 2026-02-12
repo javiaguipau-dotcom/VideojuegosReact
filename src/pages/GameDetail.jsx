@@ -10,6 +10,8 @@ const GameDetail = () => {
     const [loading, setLoading] = useState(true);
     const [comments, setComments] = useState([]);
     const [commentText, setCommentText] = useState('');
+    const [showReportModal, setShowReportModal] = useState(false);
+    const [reportReason, setReportReason] = useState('');
     const { user } = useContext(AuthContext);
     const navigate = useNavigate();
 
@@ -157,6 +159,23 @@ const GameDetail = () => {
                                 Delete Game
                             </button>
                         )}
+                        {/* Report button */}
+                        {user && user._id !== game.owner?._id && (
+                            <button
+                                onClick={() => setShowReportModal(true)}
+                                style={{
+                                    marginLeft: '10px',
+                                    padding: '10px 20px',
+                                    backgroundColor: '#f97316',
+                                    color: 'white',
+                                    border: 'none',
+                                    borderRadius: '4px',
+                                    cursor: 'pointer'
+                                }}
+                            >
+                                Report Game
+                            </button>
+                        )}
                         <button onClick={() => navigate(-1)} style={{ marginLeft: '10px', padding: '10px' }}>Back</button>
                     </div>
                 </div>
@@ -248,6 +267,84 @@ const GameDetail = () => {
                     </div>
                 </div>
             </div>
+
+            {/* Report Modal */}
+            {showReportModal && (
+                <div style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    zIndex: 1000
+                }}>
+                    <div style={{
+                        backgroundColor: 'var(--bg-card)',
+                        padding: '30px',
+                        borderRadius: '8px',
+                        maxWidth: '500px',
+                        width: '90%',
+                        border: '2px solid #ef4444'
+                    }}>
+                        <h2 style={{ marginTop: 0, marginBottom: '20px', color: '#ef4444' }}>Report Game</h2>
+                        <p style={{ marginBottom: '15px', color: '#94a3b8' }}>
+                            Please provide a reason for reporting this game:
+                        </p>
+                        <textarea
+                            value={reportReason}
+                            onChange={(e) => setReportReason(e.target.value)}
+                            placeholder="Reason for reporting (e.g., inappropriate content, spam, etc.)"
+                            rows={5}
+                            style={{
+                                width: '100%',
+                                padding: '10px',
+                                borderRadius: '4px',
+                                backgroundColor: '#1e293b',
+                                color: 'white',
+                                border: '1px solid #334155',
+                                resize: 'vertical',
+                                fontFamily: 'inherit',
+                                marginBottom: '20px'
+                            }}
+                        />
+                        <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+                            <button
+                                onClick={() => {
+                                    setShowReportModal(false);
+                                    setReportReason('');
+                                }}
+                                style={{
+                                    padding: '10px 20px',
+                                    backgroundColor: '#64748b',
+                                    color: 'white',
+                                    border: 'none',
+                                    borderRadius: '4px',
+                                    cursor: 'pointer'
+                                }}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleReportGame}
+                                style={{
+                                    padding: '10px 20px',
+                                    backgroundColor: '#ef4444',
+                                    color: 'white',
+                                    border: 'none',
+                                    borderRadius: '4px',
+                                    cursor: 'pointer'
+                                }}
+                            >
+                                Submit Report
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

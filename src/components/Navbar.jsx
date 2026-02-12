@@ -13,6 +13,9 @@ const Navbar = () => {
                 <Link to="/">All Games</Link>
                 <Link to="/mygames">My Games</Link>
                 <Link to="/create">Create Game</Link>
+                {user.role === 'admin' && (
+                    <Link to="/admin/reported" style={{ color: '#ef4444' }}>Reported Games</Link>
+                )}
                 <button onClick={logout}>Logout</button>
             </div>
             <div className="navbar-user">

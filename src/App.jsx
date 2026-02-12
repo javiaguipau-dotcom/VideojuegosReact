@@ -8,6 +8,7 @@ import GameList from './pages/GameList';
 import MyGames from './pages/MyGames';
 import CreateGame from './pages/CreateGame';
 import GameDetail from './pages/GameDetail';
+import ReportedGames from './pages/ReportedGames';
 import './App.css';
 
 function App() {
@@ -26,6 +27,7 @@ function App() {
               <Route path="/mygames" element={<MyGames />} />
               <Route path="/create" element={<CreateGame />} />
               <Route path="/game/:id" element={<GameDetail />} />
+              <Route path="/admin/reported" element={<ReportedGames />} />
             </Route>
 
             {/* Fallback */}
